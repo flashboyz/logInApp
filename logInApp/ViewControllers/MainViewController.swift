@@ -8,13 +8,28 @@
 import UIKit
 
 class MainViewController: UIViewController {
-
+    // MARK: IB Outlets
     @IBOutlet weak var userNameTF: UITextField!
     @IBOutlet weak var userPasswordTF: UITextField!
 
-    let userName = "Eugeniya"
-    let userPassword = "Teacher"
+    // MARK: - Private properties
+    private let user = User.getUserData()
+   
     
+    // MARK: - Navigation
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        guard let tabBarController = segue.destination as? UITabBarController else { return }
+        guard let viewControllers = tabBarController.viewControllers else { return }
+    
+        viewControllers.forEach {
+            if let welcomeVC = $0 as? WelcomeViewController {
+                welcomeVC.user = user
+            } else if let navigationVC = $0 as? UINavigationController {
+                let userInfoVC = navigationVC.topViewController as! UserInfoViewController
+                userInfoVC.user = user
+            }
+        }
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -22,38 +37,37 @@ class MainViewController: UIViewController {
         userPasswordTF.layer.cornerRadius = 20
     }
     
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        guard let welcomeVC = segue.destination as? WelcomeViewController else {return}
-        welcomeVC.welcome = userNameTF.text
-    }
-
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         self.view.endEditing(true)
     }
 
     
+    //MARK: - IB Actions
     
-    @IBAction func logInAction() {
-        if userNameTF.text == userName && userPasswordTF.text == userPassword {
-      performSegue(withIdentifier: "loginSegue", sender: nil)
+  
+    @IBAction func loginAction() {
+        if userNameTF.text == user.userName || userPasswordTF.text == user.userPassword {
+            performSegue(withIdentifier: "loginSegue", sender: nil)
         } else {
             showAlert(title: "Access denied⛔️", message: "Login or password are invalid")
         }
     }
     
     
+    
     @IBAction func unwindToMainScreen(segue: UIStoryboardSegue) {
-        guard segue.source is WelcomeViewController else { return }
-        self.userNameTF.text = ""
-        self.userPasswordTF.text = ""
+        userNameTF.text = ""
+        userPasswordTF.text = ""
     }
     
     @IBAction func showUserNameAlert() {
-    showAlert(title: "Ooops!", message: "Your user name is \(userName) 👩🏽‍💻")
+        showAlert(title: "Ooops!", message: "Your user name is \(user.userName) 👩🏽‍💻")
+        userNameTF.text = user.userName
     }
         
     @IBAction func showUserPasswordAlert() {
-        showAlert(title: "Ooops!", message: "Your password is \(userPassword) 👩🏽‍💻")
+        showAlert(title: "Ooops!", message: "Your password is \(user.userPassword) 👩🏽‍💻")
+        userPasswordTF.text = user.userPassword
     }
     
     
